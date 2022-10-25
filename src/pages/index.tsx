@@ -13,13 +13,17 @@ interface LocationData {
 }
 
 const Home = ({ auth: session }: { auth: Session }) => {
+    const [watchId, setWatchId] = useState<number>();
     const [locationData, setLocationData] = useState<LocationData | null>(null);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
-        });
+        setWatchId(
+            navigator.geolocation.watchPosition((position) => {
+                console.log(position);
+                const { latitude, longitude, accuracy } = position.coords;
+                setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
+            })
+        );
     }, []);
 
     const [logged, setLogged] = useState(false);
@@ -30,6 +34,8 @@ const Home = ({ auth: session }: { auth: Session }) => {
         setLoading(true);
         await logPresence.mutateAsync({ deviceTimestamp: new Date(), location: locationData });
         setLogged(true);
+
+        if (watchId) navigator.geolocation.clearWatch(watchId);
     };
 
     return (
