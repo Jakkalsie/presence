@@ -53,13 +53,20 @@ const Home = ({ auth: session }: { auth: Session }) => {
                 {logged ? (
                     <h1 className="text-2xl text-center py-4">Submission logged at {new Date().toLocaleTimeString()}</h1>
                 ) : (
-                    <button
-                        className="shadow rounded-lg text-2xl font-medium px-6 py-4 enabled:hover:shadow-lg duration-100 disabled:opacity-50 disabled:bg-gray-100"
-                        disabled={loading}
-                        onClick={handleLogPresence}
-                    >
-                        Log Presence
-                    </button>
+                    <>
+                        <button
+                            className="shadow rounded-lg text-2xl font-medium px-6 py-4 enabled:hover:shadow-lg duration-100 disabled:opacity-50 disabled:bg-gray-100"
+                            disabled={loading}
+                            onClick={handleLogPresence}
+                        >
+                            Log Presence
+                        </button>
+                        <div className="flex flex-col items-center">
+                            <span className="text-sm text-gray-500">Accuracy: {locationData?.accuracy || "Unknown"}</span>
+                            <span className="text-sm text-gray-500">Longitude: {locationData?.longitude || "Unknown"}</span>
+                            <span className="text-sm text-gray-500">Latitude: {locationData?.latitude || "Unknown"}</span>
+                        </div>
+                    </>
                 )}
             </main>
         </>
