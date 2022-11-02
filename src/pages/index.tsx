@@ -20,20 +20,30 @@ const Home = ({ auth: session }: { auth: Session }) => {
     const [locationData, setLocationData] = useState<LocationData | null>(null);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude, accuracy } = position.coords;
-            setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
-        });
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                console.log('getCurrentPosition');
+                const { latitude, longitude, accuracy } = position.coords;
+                setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
+            },
+            (err) => console.error(err),
+            { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+        );
 
-        const navigatorId = navigator.geolocation.watchPosition((position) => {
-            console.log(position);
-            const { latitude, longitude, accuracy } = position.coords;
-            setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
-        });
+        const navigatorId = navigator.geolocation.watchPosition(
+            (position) => {
+                console.log(position);
+                const { latitude, longitude, accuracy } = position.coords;
+                setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
+            },
+            (err) => console.error(err),
+            { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+        );
 
         setWatchId(navigatorId);
 
         return () => {
+            console.log('unmount');
             navigator.geolocation.clearWatch(navigatorId);
         };
     }, []);
