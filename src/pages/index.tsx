@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { getServerAuthSession } from '../server/common/get-server-auth-session';
 import { trpc } from '../utils/trpc';
 
+import * as PusherPushNotifications from '@pusher/push-notifications-web';
+
 interface LocationData {
     latitude: number;
     longitude: number;
@@ -37,6 +39,18 @@ const Home = ({ auth: session }: { auth: Session }) => {
 
         if (watchId) navigator.geolocation.clearWatch(watchId);
     };
+
+    useEffect(() => {
+        const beamsClient = new PusherPushNotifications.Client({
+            instanceId: '078b5865-9258-4a02-82f4-151915d69bb5',
+        });
+
+        beamsClient
+            .start()
+            .then(() => beamsClient.addDeviceInterest('hello'))
+            .then(() => console.log('Successfully registered and subscribed!'))
+            .catch(console.error);
+    }, []);
 
     return (
         <>

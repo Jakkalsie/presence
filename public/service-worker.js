@@ -69,7 +69,7 @@ if (!self.define) {
 }
 define(['./workbox-212689ce'], (function (workbox) { 'use strict';
 
-  importScripts();
+  importScripts("https://js.pusher.com/beams/service-worker.js");
   self.skipWaiting();
   workbox.clientsClaim();
   workbox.registerRoute("/", new workbox.NetworkFirst({
@@ -98,4 +98,4 @@ define(['./workbox-212689ce'], (function (workbox) { 'use strict';
   }), 'GET');
 
 }));
-//# sourceMappingURL=sw.js.map
+//# sourceMappingURL=service-worker.js.map

@@ -1,13 +1,18 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // @ts-check
 import { env } from './src/env/server.mjs';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import withPWA from 'next-pwa';
 const runWithPWA = withPWA({
     dest: 'public',
+    sw: 'service-worker.js',
+    importScripts: ['https://js.pusher.com/beams/service-worker.js'],
 });
+
+import withTM from 'next-transpile-modules';
+const runWithTM = withTM(['@pusher/push-notifications-web']);
 
 /**
  * Don't be scared of the generics here.
@@ -18,7 +23,7 @@ const runWithPWA = withPWA({
  * @constraint {{import('next').NextConfig}}
  */
 function defineNextConfig(config) {
-    return runWithPWA(config);
+    return runWithTM(runWithPWA(config));
 }
 
 export default defineNextConfig({
