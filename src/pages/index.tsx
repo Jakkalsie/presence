@@ -20,14 +20,12 @@ const Home = ({ auth: session }: { auth: Session }) => {
     const [locationData, setLocationData] = useState<LocationData | null>(null);
 
     useEffect(() => {
-        console.log('useEffect');
-        setWatchId(
-            navigator.geolocation.watchPosition((position) => {
-                console.log(position);
-                const { latitude, longitude, accuracy } = position.coords;
-                setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
-            })
-        );
+        const navigatorId = navigator.geolocation.watchPosition((position) => {
+            console.log(position);
+            const { latitude, longitude, accuracy } = position.coords;
+            setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
+        });
+        setWatchId(navigatorId);
     }, []);
 
     const [logged, setLogged] = useState(false);
