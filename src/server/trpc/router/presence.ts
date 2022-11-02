@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { t, authedProcedure } from "../trpc";
+import { z } from 'zod';
+import { t, authedProcedure } from '../trpc';
 
 export const presenceRouter = t.router({
     log: authedProcedure
@@ -22,4 +22,16 @@ export const presenceRouter = t.router({
                 },
             });
         }),
+
+    getMany: authedProcedure.query(({ ctx }) => {
+        return ctx.prisma.presence.findMany({
+            orderBy: {
+                serverTimestamp: 'desc',
+            },
+            include: {
+                user: true,
+            },
+            take: 50,
+        });
+    }),
 });

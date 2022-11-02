@@ -1,58 +1,11 @@
-import type { GetServerSideProps } from 'next';
+import { GetServerSideProps } from 'next';
 import { Session } from 'next-auth';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
 import { getServerAuthSession } from '../server/common/get-server-auth-session';
 import { trpc } from '../utils/trpc';
 
-import * as PusherPushNotifications from '@pusher/push-notifications-web';
-import Link from 'next/link';
-
-interface LocationData {
-    latitude: number;
-    longitude: number;
-    accuracy: number;
-    locationTimestamp: Date;
-}
-
-const Home = ({ auth: session }: { auth: Session }) => {
-    const [watchId, setWatchId] = useState<number>();
-    const [locationData, setLocationData] = useState<LocationData | null>(null);
-
-    useEffect(() => {
-        console.log('useEffect');
-        setWatchId(
-            navigator.geolocation.watchPosition((position) => {
-                console.log(position);
-                const { latitude, longitude, accuracy } = position.coords;
-                setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
-            })
-        );
-    }, []);
-
-    const [logged, setLogged] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const logPresence = trpc.presence.log.useMutation();
-
-    const handleLogPresence = async () => {
-        setLoading(true);
-        await logPresence.mutateAsync({ deviceTimestamp: new Date(), location: locationData });
-        setLogged(true);
-
-        if (watchId) navigator.geolocation.clearWatch(watchId);
-    };
-
-    useEffect(() => {
-        const beamsClient = new PusherPushNotifications.Client({
-            instanceId: '078b5865-9258-4a02-82f4-151915d69bb5',
-        });
-
-        beamsClient
-            .start()
-            .then(() => beamsClient.addDeviceInterest('hello'))
-            .then(() => console.log('Successfully registered and subscribed!'))
-            .catch(console.error);
-    }, []);
+const Logs = ({ auth: session }: { auth: Session }) => {
+    const { data: logs } = trpc.presence.getMany.useQuery();
 
     return (
         <>
@@ -99,40 +52,36 @@ const Home = ({ auth: session }: { auth: Session }) => {
 
                 <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover" />
             </Head>
-            <main className="absolute inset-0 flex items-center justify-center flex-col gap-16">
-                <div className="flex flex-col items-center">
-                    <h1 className="text-4xl font-bold">Zamaqo | Presence</h1>
-                    <p className="text-xl">Welcome {session.user?.name}</p>
+            <main className="absolute inset-0 flex justify-center items-start p-6">
+                {/* table to display all the logs */}
+                <div className="border rounded-md shadow-md">
+                    <table className="table-auto">
+                        <thead>
+                            <tr>
+                                <th className="px-4 py-2 border-b">User</th>
+                                <th className="px-4 py-2 border-b">Timestamp</th>
+                                <th className="px-4 py-2 border-b">Latitude</th>
+                                <th className="px-4 py-2 border-b">Longitude</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {logs?.map((log) => (
+                                <tr key={log.id}>
+                                    <td className="px-4 py-2">{log.user.name}</td>
+                                    <td className="px-4 py-2">{log.locationTimestamp?.toLocaleString()}</td>
+                                    <td className="px-4 py-2">{log.latitude}</td>
+                                    <td className="px-4 py-2">{log.longitude}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-                {logged ? (
-                    <>
-                        <h1 className="text-2xl text-center py-4">Submission logged at {new Date().toLocaleTimeString()}</h1>
-                    </>
-                ) : (
-                    <>
-                        <button
-                            className="shadow rounded-lg text-2xl font-medium px-6 py-4 enabled:hover:shadow-lg duration-100 disabled:opacity-50 disabled:bg-gray-100"
-                            disabled={loading}
-                            onClick={handleLogPresence}
-                        >
-                            Log Presence
-                        </button>
-                        <div className="flex flex-col items-center">
-                            <span className="text-sm text-gray-500">Accuracy: {locationData?.accuracy || 'Unknown'}</span>
-                            <span className="text-sm text-gray-500">Longitude: {locationData?.longitude || 'Unknown'}</span>
-                            <span className="text-sm text-gray-500">Latitude: {locationData?.latitude || 'Unknown'}</span>
-                        </div>
-                    </>
-                )}
-                <Link href="/logs">
-                    <a className="shadow rounded-lg text-xl font-medium px-4 py-2 hover:shadow-md duration-100 disabled:opacity-50">View logs</a>
-                </Link>
             </main>
         </>
     );
 };
 
-export default Home;
+export default Logs;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const session = await getServerAuthSession(context);
