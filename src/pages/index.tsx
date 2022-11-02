@@ -20,6 +20,11 @@ const Home = ({ auth: session }: { auth: Session }) => {
     const [locationData, setLocationData] = useState<LocationData | null>(null);
 
     useEffect(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
+        });
+
         const navigatorId = navigator.geolocation.watchPosition((position) => {
             console.log(position);
             const { latitude, longitude, accuracy } = position.coords;
