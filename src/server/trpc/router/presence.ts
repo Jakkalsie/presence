@@ -25,13 +25,18 @@ export const presenceRouter = t.router({
 
     getMany: authedProcedure.query(({ ctx }) => {
         return ctx.prisma.presence.findMany({
+            where: {
+                locationTimestamp: {
+                    not: null,
+                },
+            },
             orderBy: {
                 serverTimestamp: 'desc',
             },
             include: {
                 user: true,
             },
-            take: 50,
+            take: 10,
         });
     }),
 });

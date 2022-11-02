@@ -1,11 +1,22 @@
 import { GetServerSideProps } from 'next';
 import { Session } from 'next-auth';
 import Head from 'next/head';
+import { useMemo, useState } from 'react';
+import MapChart from '../components/Map';
 import { getServerAuthSession } from '../server/common/get-server-auth-session';
 import { trpc } from '../utils/trpc';
 
 const Logs = ({ auth: session }: { auth: Session }) => {
     const { data: logs } = trpc.presence.getMany.useQuery();
+    const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+
+    const selectedRecord = useMemo(() => {
+        if (!selectedRecordId) return null;
+        const record = logs?.find((log) => log.id === selectedRecordId);
+
+        if (!record?.user.name || !record?.latitude || !record?.longitude) return null;
+        return { name: record?.user.name, coordinates: [record?.longitude, record?.latitude] };
+    }, [selectedRecordId, logs]);
 
     return (
         <>
@@ -52,10 +63,10 @@ const Logs = ({ auth: session }: { auth: Session }) => {
 
                 <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover" />
             </Head>
-            <main className="absolute inset-0 flex justify-center items-start p-6">
+            <main className="absolute inset-0 flex justify-center items-start p-6 overflow-auto">
                 {/* table to display all the logs */}
                 <div className="border rounded-md shadow-md">
-                    <table className="table-auto">
+                    <table className="">
                         <thead>
                             <tr>
                                 <th className="px-4 py-2 border-b">User</th>
@@ -66,7 +77,7 @@ const Logs = ({ auth: session }: { auth: Session }) => {
                         </thead>
                         <tbody>
                             {logs?.map((log) => (
-                                <tr key={log.id}>
+                                <tr key={log.id} onClick={() => setSelectedRecordId(log.id)} className={`${log.id === selectedRecordId ? 'bg-gray-200' : 'hover:bg-gray-100'}`}>
                                     <td className="px-4 py-2">{log.user.name}</td>
                                     <td className="px-4 py-2">{log.locationTimestamp?.toLocaleString()}</td>
                                     <td className="px-4 py-2">{log.latitude}</td>
@@ -75,6 +86,7 @@ const Logs = ({ auth: session }: { auth: Session }) => {
                             ))}
                         </tbody>
                     </table>
+                    <MapChart markers={selectedRecord ? [selectedRecord] : []} />
                 </div>
             </main>
         </>
