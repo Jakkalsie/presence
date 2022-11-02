@@ -27,7 +27,7 @@ const Home = ({ auth: session }: { auth: Session }) => {
                 setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
             },
             (err) => console.error(err),
-            { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+            { enableHighAccuracy: true, timeout: 27000 }
         );
 
         const navigatorId = navigator.geolocation.watchPosition(
@@ -37,7 +37,7 @@ const Home = ({ auth: session }: { auth: Session }) => {
                 setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
             },
             (err) => console.error(err),
-            { enableHighAccuracy: true, maximumAge: 30000, timeout: 27000 }
+            { enableHighAccuracy: true, timeout: 27000 }
         );
 
         setWatchId(navigatorId);
