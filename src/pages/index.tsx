@@ -25,7 +25,12 @@ const Home = ({ auth: session }: { auth: Session }) => {
             const { latitude, longitude, accuracy } = position.coords;
             setLocationData({ latitude, longitude, accuracy, locationTimestamp: new Date(position.timestamp) });
         });
+
         setWatchId(navigatorId);
+
+        return () => {
+            navigator.geolocation.clearWatch(navigatorId);
+        };
     }, []);
 
     const [logged, setLogged] = useState(false);
